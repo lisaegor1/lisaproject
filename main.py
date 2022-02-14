@@ -1,20 +1,58 @@
-lines = []
-with open('main.tf') as f:
-    lines = f.readlines()
+#!flask/bin/python
+import os
+import urllib.request
+import shutil
+from os import path
+from app import app
+from mv import mv
+from txt import text
+from flask import Flask, request, redirect, jsonify, send_from_directory, abort, render_template
+from werkzeug.utils import secure_filename
 
-count = 0
-security_file = open("sg.html", "w")
-buffer = 0
-brackets = 0
-for line in lines:
-    #print(line)
-    if (line.find("aws_security_group") == 10):
-        buffer = buffer + 1
-    if(buffer > 0):
-        security_file.write(line)
-        if(line.count("}") == 1):
-            brackets = brackets + 1
-        if(line.count("}") == 0):
-            brackets = 0
-    if(brackets == 2):
-        buffer = 0
+
+
+CLIENT_IMAGES = '/home/yehor/tz/templates'
+app.config['CLIENT_IMAGES'] = CLIENT_IMAGES
+
+
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'tf'])
+
+def allowed_file(filename):
+	return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/file-upload', methods=['POST'])
+def upload_file():
+	# check if the post request has the file part
+	if 'file' not in request.files:
+		resp = jsonify({'message' : 'No file part in the request'})
+		resp.status_code = 400
+		return resp
+	file = request.files['file']
+	if file.filename == '':
+		resp = jsonify({'message' : 'No file selected for uploading'})
+		resp.status_code = 400
+		return resp
+	if file and allowed_file(file.filename):
+		filename = secure_filename(file.filename)
+		file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+		resp = jsonify({'message' : 'File successfully uploaded'})
+		resp.status_code = 201
+		text()
+		mv()
+		return render_template('sg.txt')
+	else:
+		resp = jsonify({'message' : 'Allowed file types are txt, pdf, png, jpg, jpeg, gif'})
+		resp.status_code = 400
+		return resp
+
+@app.route("/get-image/<image_name>")
+def get_image(image_name):
+
+    try:
+        return send_from_directory(app.config["CLIENT_IMAGES"], filename=image_name, as_attachment=False)
+    except FileNotFoundError:
+        abort(404)
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
