@@ -10,11 +10,6 @@ from flask import Flask, request, redirect, jsonify, send_from_directory, abort,
 from werkzeug.utils import secure_filename
 
 
-
-CLIENT_IMAGES = '/home/yehor/tz/templates'
-app.config['CLIENT_IMAGES'] = CLIENT_IMAGES
-
-
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'tf'])
 
 def allowed_file(filename):
