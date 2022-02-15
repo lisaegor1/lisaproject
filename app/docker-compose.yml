@@ -11,6 +11,6 @@ services:
     depends_on:
       - service1
   service1:
-    image: "container_v.1"
+    image: "final_app"
     expose:
       - "80"
