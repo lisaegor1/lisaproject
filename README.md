@@ -1,3 +1,94 @@
+# REST API 
+A REST API (also known as RESTful API) is an application programming interface (API or web API) that conforms to the constraints of REST architectural style and allows for interaction with RESTful web services.
+When a client request is made via a RESTful API, it transfers a representation of the state of the resource to the requester or endpoint. This information, or representation, is delivered in one of several formats via **HTTP: JSON (Javascript Object Notation), HTML, XLT, Python, PHP, or plain text. JSON** is the most generally popular file format to use because, despite its name, it’s language-agnostic, as well as readable by both humans and machines.
+
+This web server with RESTful API was built with Flask framework.  To use it you need to install dependencies:
+
+-python3.8
+> $ sudo apt update
+> $ sudo apt install python3.9 
+> $ python3.9 -V 
+
+-virtualenv
+> $ sudo apt install -y python3-venv
+
+Lets start with creating virutal env. and install in the env. Flask framework 
+> $ virtualenv flask
+> $ cd flask
+> $ flask/bin/pip install flask
+
+after that we can create file **main.py** and **app.py**. . You can download files form GitHub repo (https://github.com/lisaegor1/lisaproject.git)
+## main.py
+First of all you need to provide your main.py with libraries
+>import os
+import urllib.request
+import shutil
+from os import path
+from app import app
+from mv import mv
+from txt import text
+from flask import Flask, request, redirect, jsonify, send_from_directory, abort, render_template
+from werkzeug.utils import secure_filename
+
+These libraries are needed for the normal functionality of the framework and the built-in functions of python
+> shutil, os --> python
+> mv, txt, app --> built-in functions
+> Flask, request, send_from_directory, abort, render_template --> for framework
+
+You can define wich format files will be upload to your server
+> ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'tf'])
+def allowed_file(filename):
+return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+The most important part on main.py is app@route.  We use the  route()  decorator to tell Flask what URL should trigger our function.
+I made one trigger that activates the function when you make a POST request
+
+When you make a request (via curl), you are specifying a file to upload to the server. The function checks if the request contains a file.
+>  check if the post request has the file part
+if 'file' not in request.files:
+resp = jsonify({'message' : 'No file part in the request'})
+resp.status_code = 400
+return resp
+file = request.files['file']
+if file.filename == '':
+resp = jsonify({'message' : 'No file selected for uploading'})
+resp.status_code = 400
+return resp
+
+ If the request passed the test, then the file is uploaded to the server. After that, the file will be processed by the txt.py and mv.py functions. They will extract the data about security groups and move the file with them to the templates folder
+
+>if file and allowed_file(file.filename):
+filename = secure_filename(file.filename)
+file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+resp = jsonify({'message' : 'File successfully uploaded'})
+resp.status_code = 201
+text()
+mv()
+return render_template('sg.txt')
+
+The condition __name__ == "__main__" ensures that the run() method is called only when main.py is run as the main program
+>if __name__ == "__main__":
+app.run(debug=True)
+
+## app.py
+In in file you need to specify variables for main.py.
+>UPLOAD_FOLDER = '/home/yehor/tz'
+app.secret_key = "secret key"
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+
+The nost imprtant is UPLOAD_FOLDER. You need to specify the path to the folder of our project (where the uploaded files will be stored)
+## txt.py and mv.py 
+**txt.py**
+This script finds in the main.tf file (which we will upload to the server) security groups. After that, the script creates the sg.txt file
+
+**mv.py**
+The main goal of the script is to drop the sg.txt file into the ***templates*** folder. 
+**Important!** by default Flask server looks for pages in the teplates folder.
+>FROM MAIN.PY
+
+>render_template('sg.txt')
+
 # Starting the server
 To start your server you must run main.py
 >python3 main.py
