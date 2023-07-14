@@ -1,4 +1,4 @@
-# REST API 
+# REST API test
 A REST API (also known as RESTful API) is an application programming interface (API or web API) that conforms to the constraints of REST architectural style and allows for interaction with RESTful web services.
 When a client request is made via a RESTful API, it transfers a representation of the state of the resource to the requester or endpoint. This information, or representation, is delivered in one of several formats via **HTTP: JSON (Javascript Object Notation), HTML, XLT, Python, PHP, or plain text. JSON** is the most generally popular file format to use because, despite its name, it’s language-agnostic, as well as readable by both humans and machines.
 
